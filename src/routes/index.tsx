@@ -28,7 +28,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import {
   useMutation,
@@ -38,6 +38,7 @@ import {
 } from "@tanstack/react-query";
 import api from "@/lib/axios";
 import BaseLayout from "@/layout/base";
+import LoadingScreen from "@/components/loadingScreen";
 
 export interface User {
   id?: number;
@@ -58,15 +59,19 @@ function App() {
     delete: false,
   });
 
+  const navigate = useNavigate();
   // READ: Mengambil
   const { data: users, isLoading } = useQuery<User[]>({
     queryKey: ["user"],
     queryFn: async () => {
-      const { data, status } = await api.get("/user");
-      if (status != 200) throw new Error("Gagal mengambil artikel");
-      return data;
+      try {
+        const { data, status } = await api.get("/user");
+        if (status != 200) throw new Error("Gagal mengambil artikel");
+        return data;
+      } catch (error) {
+        navigate({ to: "/auth/login" });
+      }
     },
-    // enabled: !!localStorage.getItem("access_token"),
   });
 
   const [formValue, setFormValue] = useState<User>({});
@@ -81,11 +86,15 @@ function App() {
   //create update
   const saveMutation: UseMutationResult<any, Error, any> = useMutation({
     mutationFn: async (userData) => {
-      const url = userData.id ? `/user/${userData.id}` : "/user";
-      const { data, status } = await api.post(url, userData);
+      try {
+        const url = userData.id ? `/user/${userData.id}` : "/user";
+        const { data, status } = await api.post(url, userData);
 
-      if (status != 200) throw new Error("Gagal membuat artikel");
-      return data;
+        if (status != 200) throw new Error("Gagal membuat artikel");
+        return data;
+      } catch (error) {
+        navigate({ to: "/auth/login" });
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user"] });
@@ -99,9 +108,13 @@ function App() {
   //delete data
   const delMutation: UseMutationResult<any, Error, any> = useMutation({
     mutationFn: async () => {
-      const { data, status } = await api.delete(`/user/${formValue.id}`);
-      if (status != 200) throw new Error("Gagal menghapus artikel");
-      return data;
+      try {
+        const { data, status } = await api.delete(`/user/${formValue.id}`);
+        if (status != 200) throw new Error("Gagal menghapus artikel");
+        return data;
+      } catch (error) {
+        navigate({ to: "/auth/login" });
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user"] });
@@ -112,7 +125,9 @@ function App() {
     },
   });
 
-  if (isLoading) return <p className="text-center">Memuat Data.....</p>;
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
   return (
     <BaseLayout>
       <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6 px-4 md:px-6">
