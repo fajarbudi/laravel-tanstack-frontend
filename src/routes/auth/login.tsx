@@ -42,9 +42,13 @@ function RouteComponent({ className, ...props }: React.ComponentProps<"div">) {
   const goLogin = async (e: any) => {
     e.preventDefault();
 
-    const { data } = await api.post("/login", formValue);
+    const { data } = await api.post("/login", formValue).then((response) => {
+      return response;
+    }).catch((error) => {
+      return error.response;
+    });
 
-    if (data?.message == "Login Berhasil") {
+    if (data?.success) {
       navigate({ to: "/" });
     }
 

@@ -62,10 +62,11 @@ function RouteComponent() {
     queryFn: async () => {
       try {
         const { data, status } = await api.get("referensi/kabupaten");
+
         if (status != 200) throw new Error("Gagal mengambil artikel");
         return data.data;
       } catch (error) {
-        navigate({ to: "/auth/login" });
+        alert(`Error: ${error}`);
       }
     },
   });
@@ -86,20 +87,24 @@ function RouteComponent() {
         const url = kabupatenData.kabupaten_id
           ? `referensi/kabupaten/${kabupatenData.kabupaten_id}`
           : "referensi/kabupaten";
-        const { data, status } = await api.post(url, kabupatenData);
+        const { data, status } = await api
+          .post(url, kabupatenData)
+          .then((response) => {
+            return response;
+          })
+          .catch((error) => {
+            return error.response;
+          });
 
         if (status != 200) throw new Error("Gagal membuat artikel");
         return data;
       } catch (error) {
-        navigate({ to: "/auth/login" });
+        alert(`Error: ${error}`);
       }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["kabupaten"] });
       setModalOpen((prev) => ({ ...prev, create: false }));
-    },
-    onError: (error) => {
-      alert(`Error: ${error.message}`);
     },
   });
 
@@ -107,21 +112,24 @@ function RouteComponent() {
   const delMutation: UseMutationResult<any, Error, any> = useMutation({
     mutationFn: async () => {
       try {
-        const { data, status } = await api.delete(
-          `referensi/kabupaten/${formValue.kabupaten_id}`
-        );
+        const { data, status } = await api
+          .delete(`referensi/kabupaten/${formValue.kabupaten_id}`)
+          .then((response) => {
+            return response;
+          })
+          .catch((error) => {
+            return error.response;
+          });
+
         if (status != 200) throw new Error("Gagal menghapus artikel");
         return data;
       } catch (error) {
-        navigate({ to: "/auth/login" });
+        alert(`Error: ${error}`);
       }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["kabupaten"] });
       setModalOpen((prev) => ({ ...prev, delete: false }));
-    },
-    onError: (error) => {
-      alert(`Error: ${error.message}`);
     },
   });
 
@@ -267,7 +275,7 @@ function RouteComponent() {
                   Kembali
                 </Button>
                 <Button onClick={() => delMutation.mutate(formValue)}>
-                  Simpan
+                  Hapus
                 </Button>
               </DialogFooter>
             </DialogContent>

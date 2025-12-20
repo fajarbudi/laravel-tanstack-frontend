@@ -18,16 +18,13 @@ api.interceptors.response.use(
       (error.response && error.response.status === 401) ||
       error.response.status === 404
     ) {
-      // const currentPath = window.location.pathname + window.location.search;
-      // window.location.href = `/auth/login?redirect=${encodeURIComponent(currentPath)}`;
 
       window.location.href = `/auth/login`;
 
-      // Hentikan Promise error agar tidak memicu error di komponen yang memanggil API
       return new Promise(() => {});
     }
 
-    // Untuk error lain (404, 500, dll.), biarkan error diteruskan
+
     return Promise.reject(error);
   }
 );

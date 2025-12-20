@@ -65,11 +65,19 @@ function App() {
     queryKey: ["user"],
     queryFn: async () => {
       try {
-        const { data, status } = await api.get("/user");
+        const { data, status } = await api
+          .get("/user")
+          .then((response) => {
+            return response;
+          })
+          .catch((error) => {
+            return error.response;
+          });
+
         if (status != 200) throw new Error("Gagal mengambil artikel");
         return data;
       } catch (error) {
-        navigate({ to: "/auth/login" });
+        alert(`Error: ${error}`);
       }
     },
   });
@@ -88,20 +96,24 @@ function App() {
     mutationFn: async (userData) => {
       try {
         const url = userData.id ? `/user/${userData.id}` : "/user";
-        const { data, status } = await api.post(url, userData);
+        const { data, status } = await api
+          .post(url, userData)
+          .then((response) => {
+            return response;
+          })
+          .catch((error) => {
+            return error.response;
+          });
 
         if (status != 200) throw new Error("Gagal membuat artikel");
         return data;
       } catch (error) {
-        navigate({ to: "/auth/login" });
+        alert(`Error: ${error}`);
       }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user"] });
       setModalOpen((prev) => ({ ...prev, create: false }));
-    },
-    onError: (error) => {
-      alert(`Error: ${error.message}`);
     },
   });
 
@@ -109,19 +121,23 @@ function App() {
   const delMutation: UseMutationResult<any, Error, any> = useMutation({
     mutationFn: async () => {
       try {
-        const { data, status } = await api.delete(`/user/${formValue.id}`);
+        const { data, status } = await api
+          .delete(`/user/${formValue.id}`)
+          .then((response) => {
+            return response;
+          })
+          .catch((error) => {
+            return error.response;
+          });
         if (status != 200) throw new Error("Gagal menghapus artikel");
         return data;
       } catch (error) {
-        navigate({ to: "/auth/login" });
+        alert(`Error: ${error}`);
       }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user"] });
       setModalOpen((prev) => ({ ...prev, delete: false }));
-    },
-    onError: (error) => {
-      alert(`Error: ${error.message}`);
     },
   });
 

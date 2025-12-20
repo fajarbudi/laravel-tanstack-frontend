@@ -40,7 +40,7 @@ export function NavUser({
   const logOut = async () => {
     const { data } = await api.post("/logOut");
 
-    if (data.message == "Logout Berhasil") {
+    if (data?.succes) {
       navigate({ to: "/auth/login" });
     }
     return;
